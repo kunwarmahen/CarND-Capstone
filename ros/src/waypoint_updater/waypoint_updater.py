@@ -22,8 +22,9 @@ as well as to verify your TL classifier.
 TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
-LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
+LOOKAHEAD_WPS = 50 # Number of waypoints we will publish. You can change this number
 SPEED = 10
+END_INDEX = 10
 
 class WaypointUpdater(object):
     def __init__(self):
@@ -51,19 +52,23 @@ class WaypointUpdater(object):
 			lane = Lane()
 
 			if self.waypoints is not None and self.pose is not None:
-				#lane.header = self.waypoints.header
 				closet_waypoint_index = self.get_closest_waypoint_index(self.waypoints.waypoints, self.pose)
-				#print(self.tf_light_index)
-				new_tf_light_index = None
-				if self.tf_light_index >= closet_waypoint_index and self.tf_light_index <=closet_waypoint_index+LOOKAHEAD_WPS:
-					new_tf_light_index = self.tf_light_index - closet_waypoint_index
+				end_index = None
+				start_index = None
+				if self.tf_light_index != -1 and self.tf_light_index >= closet_waypoint_index and self.tf_light_index <=closet_waypoint_index+LOOKAHEAD_WPS:
+					end_index = self.tf_light_index - closet_waypoint_index
+					start_index = end_index - END_INDEX
+					if start_index < 0:
+						start_index = 0
+				
 				lane.waypoints = self.waypoints.waypoints[closet_waypoint_index:closet_waypoint_index+LOOKAHEAD_WPS]
 
 				for waypoint in lane.waypoints:
 					waypoint.twist.twist.linear.x = SPEED
 				
-				if new_tf_light_index is not None:
-					lane.waypoints[new_tf_light_index].twist.twist.linear.x = 0.0
+				if end_index is not None:
+					for waypoint in lane.waypoints[start_index:end_index]:
+						waypoint.twist.twist.linear.x = 0.0
 				
 				self.final_waypoints_pub.publish(lane)
 			
@@ -103,17 +108,19 @@ class WaypointUpdater(object):
     def get_closest_waypoint_index(self, waypoints, pose):
 		dist = float('inf')
 		index = 0
+		selected_index = None
 		dl = lambda a, b: math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2  + (a.z-b.z)**2)
 		for waypoint in waypoints:
 			temp_dist = dl(waypoint.pose.pose.position, pose.position)
 			if temp_dist < dist:
 				dist = temp_dist
-				index = index + 1
-
-		if waypoints[index].pose.pose.position.x < self.pose.position.x:
+				selected_index = index
 			index = index + 1
+
+		if waypoints[selected_index].pose.pose.position.x < self.pose.position.x:
+			selected_index = selected_index + 1
 	
-		return index
+		return selected_index
 
 if __name__ == '__main__':
     try:
