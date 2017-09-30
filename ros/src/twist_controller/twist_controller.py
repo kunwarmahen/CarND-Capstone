@@ -26,6 +26,7 @@ class Controller(object):
         self.steer_pid.reset()		
  
         acceleration = target_velocity - current_velocity / 0.5
+        #print(str(current_velocity) + " " + str(target_velocity) + " " + str(acceleration))
         if acceleration > 0:
             acceleration = min(self.accel_limit, acceleration)
         else:
@@ -42,7 +43,7 @@ class Controller(object):
         quaternion = (pose.orientation.x,pose.orientation.y,pose.orientation.z,pose.orientation.w)
         return tf.transformations.euler_from_quaternion(quaternion)
  
-    def calculate_cte(self, pose, waypoints):		
+    def calculate_cte(self, pose, waypoints):
         x_vals, y_vals = self.transform_waypoints(pose, waypoints)
         coefficients = np.polyfit(x_vals, y_vals, 5)
         cte = np.polyval(coefficients, 5.0)

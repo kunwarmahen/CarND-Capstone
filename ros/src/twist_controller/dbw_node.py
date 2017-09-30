@@ -88,10 +88,11 @@ class DBWNode(object):
             #                                                     <dbw status>,
             #                                                     <any other argument you need>)
             if self.velocity is not None and self.waypoints is not None and self.pose is not None and self.dbw_enabled:
-              throttle, brake, steer = self.controller.control(self.waypoints[0].twist.twist.linear.x, self.velocity.linear.x, self.pose, self.waypoints, self.twist)
-              
-              steer += self.yaw_controller.get_steering(self.twist.linear.x, self.twist.angular.z, self.velocity.linear.x)
-              self.publish(throttle, brake, steer)
+                throttle, brake, steer = self.controller.control(self.waypoints[0].twist.twist.linear.x, self.velocity.linear.x, self.pose, self.waypoints, self.twist)
+
+                #print(str(self.pose.position.x) + "-->" + str(throttle) + " " + str(brake) + " "  + str (steer))
+                steer += self.yaw_controller.get_steering(self.twist.linear.x, self.twist.angular.z, self.velocity.linear.x)
+                self.publish(throttle, brake, steer)
 
             rate.sleep()
 
