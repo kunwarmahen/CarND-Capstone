@@ -26,9 +26,9 @@ class Controller(object):
         self.steer_pid.reset()		
  
         acceleration = target_velocity - current_velocity / 0.5
-        #print(str(current_velocity) + " " + str(target_velocity) + " " + str(acceleration))
+        print("Current Velocity: " + str(current_velocity) + " Target Velocity: " + str(target_velocity) + " Expected Acceleration: " + str(acceleration))
         if acceleration > 0:
-            acceleration = min(self.accel_limit, acceleration)
+          acceleration = min(self.accel_limit, acceleration)
         else:
             acceleration = max(self.decel_limit, acceleration)
         torque = self.vehicle_mass * acceleration * self.wheel_radius
